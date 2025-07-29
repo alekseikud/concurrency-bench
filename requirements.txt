@@ -1,0 +1,10 @@
+aiohttp
+requests
+httpx
+pillow
+psutil
+duckdb>=1.0.0
+pandas
+click
+ruff
+black
