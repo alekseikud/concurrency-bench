@@ -44,5 +44,3 @@ def reset_db():
         raise Exception(f"Exception ocurred during reseting database. Exception:{err}")
     finally:
         server_disconnect(connection)
-
-reset_db()
