@@ -21,6 +21,7 @@ def timer(func):
             sync_wrapper.times.append(end-start)
             return result
         sync_wrapper.times=[] #type:ignore
+        sync_wrapper.__name__=func.__name__
         return sync_wrapper
     else:
         async def async_wrapper(*args,**kwargs):
@@ -30,6 +31,7 @@ def timer(func):
             async_wrapper.times.append(end-start)
             return result
         async_wrapper.times=[] #type:ignore
+        async_wrapper.__name__=func.__name__
         return async_wrapper
 
 
@@ -133,9 +135,8 @@ async def copy_data_async(time_queue:Queue,count:int=2000000):
 def tar_files(time_queue:Queue,number:int=1):
     for i in range(number):
         try:
-            os.system("""tar -czf datasets/archive.tar.gz datasets/* &&
-                    rm datasets/*.csv && tar -xzf datasets/archive.tar.gz &&
-                    rm datasets/*.gz""")
+            os.system("""tar -czf datasets/archive.tar.gz datasets/* && 
+                      tar -xzf datasets/archive.tar.gz && rm datasets/*.gz""")
             time_queue.put((1,0))
         except:
             time_queue.put((0,1))
