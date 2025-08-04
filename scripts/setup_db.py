@@ -1,9 +1,11 @@
 from psycopg2 import connect
 from psycopg2.extensions import connection as Connection
 from dotenv import load_dotenv
-import os
+import os,sqlparse
 
 load_dotenv()
+
+SQL_STATEMENTS=["SQL/create_tables.sql","SQL/trigger.sql"]
 
 def server_connect(admin:bool=False)->Connection|None:
     try:
@@ -44,3 +46,18 @@ def reset_db():
         raise Exception(f"Exception ocurred during reseting database. Exception:{err}")
     finally:
         server_disconnect(connection)
+
+if __name__=="__main__":
+    reset_db()
+    for file in SQL_STATEMENTS:
+        with open(file,encoding="UTF-8") as file:
+            raw_sql=file.read()
+            cleaned_sql=sqlparse.split(raw_sql)
+            for statement in cleaned_sql:
+                connection:Connection|None=server_connect()
+                if connection:
+                    connection.autocommit=True
+                    with connection.cursor() as cursor:
+                        if statement:
+                            cursor.execute(statement.strip())
+                server_disconnect(connection)

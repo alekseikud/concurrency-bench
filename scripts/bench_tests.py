@@ -1,11 +1,9 @@
 import scripts.tests as tests
-import asyncio
+import asyncio,inspect,time,sys
 from multiprocessing import Process,Manager
 from threading import Thread
-from typing import Tuple
 from queue import Queue
 import scripts.setup_db as setup_db
-import inspect
 
 #Top‑level worker: safe to pickle.
 #Calls the right tests.* function and puts its return into results_q.
@@ -646,30 +644,32 @@ def bench_all(concurrency:int=2):
         for func, inner in TWO_ARGUMENT_FUNCTIONS.items():
             for itr in inner:
                 func.times=[]
-                if "read" in str(itr):
+                if "read" in str(itr.__name__):
                     if inspect.iscoroutinefunction(func):
-                        success,error=asyncio.run(func(concurrency))
+                        success,error=asyncio.run(func("read",concurrency))
                     else:
-                        success,error=func(concurrency)
-                else:
+                        success,error=func("read",concurrency)
+                elif "write" in str(itr.__name__):
                     if inspect.iscoroutinefunction(func):
                         success,error=asyncio.run(func("write",concurrency))
                     else:
                         success,error=func("write",concurrency)
+                else:
+                    raise Exception(f"Unexpected word: {itr.__name__}")
                 with connection.cursor() as cursor:
                     try:
                         cursor.execute(f"""INSERT INTO test (test_name,duration_ms,concurrency,action_type,
                                     best_time_ms,worst_time_ms,success_count,error_count)
                                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
                                         (str(func.__name__),*(func.times),concurrency,str(itr.__name__),
-                                        min(itr.times,default=None),max(itr.times,default=None),success,error))
+                                        min(itr.times,default=None),max(itr.times,default=None),success,error))#type:ignore
                         connection.commit()
                     except Exception as _ex:
                         connection.rollback()
                         raise Exception(f"Exception occurred during inserting data.Exception:{_ex}")
                 print(f"success:error {success}:{error}")
                 print(f"all time: {func.times}")
-                print(f"per function time: {itr.times}")
+                print(f"per function time: {itr.times}")#type:ignore
                 print("-" * 40)
 
         for func, inner in ONE_ARGUMENT_FUNCTIONS.items():
@@ -696,3 +696,46 @@ def bench_all(concurrency:int=2):
             print(f"per function time: {inner.times}")
             print("-" * 40)
     setup_db.server_disconnect(connection)
+
+
+if __name__=="__main__":
+    arguments=sys.argv
+    if arguments[1]=="loop_tests":
+        if len(arguments)>3:
+            responce=input(f"""The number of arguments is incorrect. 
+                                Do you want to loop over first argument: {arguments[2]}?(Y|N)""")
+            if responce=="N":
+                exit()
+        try:
+            number=int(arguments[2])
+            print("======================================")
+            print(f"================NUMBER={number}==============")
+            print("======================================")
+            if number>20: exit() #too big number
+            for i in range(number):
+                bench_all(i)
+        except:
+            raise Exception(f"Incorrect argument which is not intiger: {arguments[2]}")
+
+    elif arguments[1]=="select_tests":
+        iter=iter(arguments)
+        next(iter)
+        next(iter)
+        for i in iter:
+            try:
+                number=int(i)
+                print("======================================")
+                print(f"================NUMBER={number}==============")
+                print("======================================")
+                if number>30: exit() #too big number
+                bench_all(number)
+            except:
+                raise Exception(f"Cannot cast argument: {i}")
+    else:
+        raise Exception(f"Incorrect argument: {arguments[1]}")
+
+
+# loop_tests:
+# 	@$(PYTHON) $(FLAGS) scripts.bench_tests && echo setting up was completed
+
+# select_tests:
