@@ -130,7 +130,7 @@ async def csv_async_test(func="read",thread_number:int=2)->tuple[int,int]:
 def query_threading_test(number=2)->tuple[int,int]:
     tests.query_execution.times= []#type:ignore
     threads=[]
-    succcess=0
+    success=0
     error=0
     time_queue=Queue()
     for i in range(number):
@@ -143,16 +143,16 @@ def query_threading_test(number=2)->tuple[int,int]:
         thread.join()
     while not time_queue.empty():
         s,e=time_queue.get()
-        succcess+=s
+        success+=s
         error+=e
-    return (succcess,error)
+    return (success,error)
     
 
 @tests.timer
 def query_processing_test(number=2)->tuple[int,int]:
     tests.query_execution.times= []#type:ignore
     processes=[]
-    succcess=0
+    success=0
     error=0
     time_queue=Manager().Queue()
     for i in range(number):
@@ -165,15 +165,15 @@ def query_processing_test(number=2)->tuple[int,int]:
         process.join()
     while not time_queue.empty():
         s,e=time_queue.get()
-        succcess+=s
+        success+=s
         error+=e
-    return (succcess,error)
+    return (success,error)
 
 @tests.timer
 async def query_async_test(number=2)->tuple[int,int]:
     tests.query_execution.times= []#type:ignore
     tasks=[]
-    succcess=0
+    success=0
     error=0
     time_queue=Manager().Queue()
     async def worker(query:str,time_queue:Queue):
@@ -185,9 +185,9 @@ async def query_async_test(number=2)->tuple[int,int]:
     await asyncio.gather(*tasks)
     while not time_queue.empty():
         s,e=time_queue.get()
-        succcess+=s
+        success+=s
         error+=e
-    return (succcess,error)
+    return (success,error)
 
 @tests.timer
 def copy_data_threading_test(number=2)->tuple[int,int]:
@@ -708,11 +708,11 @@ if __name__=="__main__":
                 exit()
         try:
             number=int(arguments[2])
-            print("======================================")
-            print(f"================NUMBER={number}=============")
-            print("======================================")
             if number>20: exit() #too big number
-            for i in range(number):
+            for i in range(1,number):
+                print("======================================")
+                print(f"================NUMBER={i}=============")
+                print("======================================")
                 bench_all(i)
         except:
             raise Exception(f"Incorrect argument which is not intiger: {arguments[2]}")
@@ -727,7 +727,7 @@ if __name__=="__main__":
                 print("======================================")
                 print(f"================NUMBER={number}=============")
                 print("======================================")
-                if number>30: exit() #too big number
+                if  number<=0 or number>30: exit() #too big number
                 bench_all(number)
             except:
                 raise Exception(f"Cannot cast argument: {i}")
