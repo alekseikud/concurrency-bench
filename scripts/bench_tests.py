@@ -709,7 +709,7 @@ if __name__=="__main__":
         try:
             number=int(arguments[2])
             print("======================================")
-            print(f"================NUMBER={number}==============")
+            print(f"================NUMBER={number}=============")
             print("======================================")
             if number>20: exit() #too big number
             for i in range(number):
@@ -725,7 +725,7 @@ if __name__=="__main__":
             try:
                 number=int(i)
                 print("======================================")
-                print(f"================NUMBER={number}==============")
+                print(f"================NUMBER={number}=============")
                 print("======================================")
                 if number>30: exit() #too big number
                 bench_all(number)
@@ -733,9 +733,3 @@ if __name__=="__main__":
                 raise Exception(f"Cannot cast argument: {i}")
     else:
         raise Exception(f"Incorrect argument: {arguments[1]}")
-
-
-# loop_tests:
-# 	@$(PYTHON) $(FLAGS) scripts.bench_tests && echo setting up was completed
-
-# select_tests:
