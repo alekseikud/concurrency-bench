@@ -28,6 +28,7 @@ ARGS := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
 # Reset and initialize the database
 set_up:
+	@source .venv/bin/activate
 	@echo "→ Setting up database schema..."
 	@$(PYTHON) $(FLAGS) scripts.setup_db \
 	&& echo "✔ Database setup completed."
