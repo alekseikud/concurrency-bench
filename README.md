@@ -1,6 +1,6 @@
 # concurrency-bench
 
-A Python-based framework for benchmarking concurrency performance across a variety of tests and database operations.
+A Python-based toolkit that helps decide between threading, multiprocessing, and async paradigms by benchmarking their performance on various tests and database operations.
 
 ## Features
 
