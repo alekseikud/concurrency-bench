@@ -1,5 +1,5 @@
 from psycopg2.extensions import connection as Connection
-from setup_db import server_connect,server_disconnect
+from scripts.setup_db import server_connect,server_disconnect
 import pandas as pd
 import csv
 
@@ -12,7 +12,6 @@ def rank_test_types()->None:
         if connection:
             df=pd.read_sql_query(sql,connection)
             df["rank"]=df["ranking"].apply(func=lambda x: "max" if x==3 else ("min" if x==1 else "avg"))
-            print(df)
             df=df.pivot_table(index=["concurrency","action_type"],columns="test_type",values="rank",aggfunc="last")
             df.to_csv("reports/rank_test_types.csv")
     except:
@@ -43,8 +42,12 @@ def normalised_table()->None:
                 with open("reports/normalised_table.csv",mode="w") as file:
                     writer=csv.writer(file)
                     for row in rows:
-                        file.write(",".join(str(word) for word in row))
+                        writer.writerow([str(word) for word in row])
     except:
         raise Exception("Exception ocurred during reporting in normalised_table function")
     finally:
         server_disconnect(connection)
+
+if __name__=="__main__":
+    normalised_table()
+    rank_test_types()
