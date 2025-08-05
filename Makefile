@@ -5,7 +5,7 @@ PYTHON := python
 FLAGS  := -m
 
 # Declare phony targets
-.PHONY: help all set_up loop_tests select_tests
+.PHONY: help all set_up loop_tests select_tests report
 
 # Default goal when no target is provided
 .DEFAULT_GOAL := help
@@ -28,7 +28,7 @@ ARGS := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
 # Reset and initialize the database
 set_up:
-	@source .venv/bin/activate
+	@. .venv/bin/activate
 	@echo "→ Setting up database schema..."
 	@$(PYTHON) $(FLAGS) scripts.setup_db \
 	&& echo "✔ Database setup completed."
@@ -45,6 +45,10 @@ select_tests:
 	@$(PYTHON) $(FLAGS) scripts.bench_tests select_tests $(ARGS) \
 	&& echo "✔ Selected tests completed."
 
+report:
+	@echo "→  Making reports"
+	@$(PYTHON) $(FLAGS) scripts.report \
+	&& echo "✔ Reporting is completed."
 # Catch-all to prevent Make from trying to build files named by args
 %:
 	@:

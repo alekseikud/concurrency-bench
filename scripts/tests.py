@@ -127,28 +127,28 @@ def copy_data(time_queue:Queue,count:int=500000):
     except:
         time_queue.put((0,1))
 
-async def copy_data_async(time_queue:Queue,count:int=2000000):
+async def copy_data_async(time_queue:Queue,count:int=500000):
     loop=asyncio.get_running_loop()
     await loop.run_in_executor(None,copy_data,time_queue,count)
 
 @timer
-def tar_files(time_queue:Queue,number:int=20):
+def tar_files(time_queue:Queue,number:int=3):
     success=0
     error=0
     cipher=secrets.token_urlsafe(8)
-    os.system(f'mkdir datasets/"{cipher}" && cp *.csv datasets/"{cipher}"')
+    os.system(f'mkdir datasets/{cipher} && cp datasets/*.csv datasets/{cipher}')
     for i in range(number):
         try:
-            os.system(f"""tar -czf datasets/"{cipher}"/archive.tar.gz datasets/"{cipher}"/* && 
-                      tar -xzf datasets/"{cipher}"/archive.tar.gz && rm -rf datasets/"{cipher}" """)
+            os.system(f"""tar -czf datasets/{cipher}/archive.tar.gz datasets/{cipher}/*.csv && 
+                      tar -xzf datasets/{cipher}/archive.tar.gz """)
             success+=1
         except:
             error+=1
         time_queue.put((success,error))
-        os.system(f'rm -rf datasets/"{cipher}"')
+    os.system(f'rm -rf datasets/{cipher}')
 
     
-async def tar_files_async(time_queue:Queue,number:int=1):
+async def tar_files_async(time_queue:Queue,number:int=3):
     loop=asyncio.get_running_loop()
     await loop.run_in_executor(None,tar_files,time_queue,number)
 
@@ -157,19 +157,18 @@ def gz_files(time_queue:Queue,number:int=10):
     success=0
     error=0
     cipher=secrets.token_urlsafe(8)
-    os.system(f'mkdir datasets/"{cipher}" && cp *.csv datasets/"{cipher}"')
+    os.system(f'mkdir datasets/{cipher} && cp datasets/*.csv datasets/"{cipher}"')
     for i in range(number):
         try:
-            os.system(f'gzip -f datasets/"{cipher}"/*.csv')
-            os.system(f'gunzip datasets/"{cipher}"/*')
-            os.system(f'rm -rf datasets/"{cipher}"')
+            os.system(f'gzip -f datasets/{cipher}/*.csv')
+            os.system(f'gunzip datasets/{cipher}/*')
             success+=1
         except:
             error+=1
         time_queue.put((success,error))
-    os.system(f'rm -rf datasets/"{cipher}"')
+    os.system(f'rm -rf datasets/{cipher}')
 
-async def gz_files_async(time_queue:Queue,number:int=1):
+async def gz_files_async(time_queue:Queue,number:int=10):
     loop=asyncio.get_running_loop()
     await loop.run_in_executor(None,gz_files,time_queue,number)
 
